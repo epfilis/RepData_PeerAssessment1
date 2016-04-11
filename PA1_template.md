@@ -1,21 +1,17 @@
----
-title: "PA1_template.Rmd"
-author: "Efthimios Filis"
-date: "April 8, 2016"
-output: 
-  html_document: 
-    fig_caption: yes
-    keep_md: yes
----
+# PA1_template.Rmd
+Efthimios Filis  
+April 8, 2016  
 
 Loading and preprocessing the data
-```{r}
+
+```r
 activity <- read.csv("activity.csv")
 ```
 
 
 Calculate the total number of steps taken per day
-```{r}
+
+```r
 totalsteps <- tapply(activity$steps, activity$date, FUN=sum, na.rm=TRUE)
 ```
 
@@ -23,15 +19,45 @@ totalsteps <- tapply(activity$steps, activity$date, FUN=sum, na.rm=TRUE)
 Make a histogram of the total number of steps taken each day
 
 
-```{r}
+
+```r
 histo <- hist(totalsteps, col="blue")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
+```r
 print(histo)
+```
+
+```
+## $breaks
+## [1]     0  5000 10000 15000 20000 25000
+## 
+## $counts
+## [1] 13 12 28  6  2
+## 
+## $density
+## [1] 4.262295e-05 3.934426e-05 9.180328e-05 1.967213e-05 6.557377e-06
+## 
+## $mids
+## [1]  2500  7500 12500 17500 22500
+## 
+## $xname
+## [1] "totalsteps"
+## 
+## $equidist
+## [1] TRUE
+## 
+## attr(,"class")
+## [1] "histogram"
 ```
 
 Calculate and report the mean and median of the total number of steps taken per day
 
 
-```{r}
+
+```r
 meantotsteps<- mean(totalsteps, na.rm=TRUE)
 medtotalsteps<- median(totalsteps, na.rm=TRUE)
 ```
@@ -42,33 +68,48 @@ and the average number of steps taken, averaged across all days (y-axis)
 Which 5-minute interval, on average across all the days in the dataset, 
 contains the maximum number of steps?
 
-```{r}
+
+```r
 library(ggplot2)
 avg <- aggregate(x=list(steps=activity$steps), by=list(interval=activity$interval), FUN=mean, na.rm=TRUE)
 
 ggplot(data=avg,aes(x=interval,y=steps))+geom_line()+xlab("5 Minute Inverval")+ylab("Avg # of Steps Taken")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+
 Which 5-minute interval, on average across all the days in the dataset, 
 contains the maximum number of steps?
 I will solve this with the simple which.max function.
 
-```{r}
+
+```r
 avg[which.max(avg$steps),]
+```
+
+```
+##     interval    steps
+## 104      835 206.1698
 ```
 
 
 Imputing Missing Values
 Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
 
-```{r}
+
+```r
 sum(is.na(activity))
+```
+
+```
+## [1] 2304
 ```
 
 All of the missing values are filled in with mean value for that 5-minute interval.
 
 
-```{r}
+
+```r
 fillvalues <- function(steps, interval) {
   filled <- NA
   if (!is.na(steps))
@@ -77,18 +118,33 @@ return(filled)}
 
 filleddata <- activity
 filleddata$steps <- mapply(fillvalues, filleddata$steps, filleddata$interval)
-
-
 ```
 
 
 Now, using the filled data set, let's make a histogram of the total number of steps taken each day and calculate the mean and median total number of steps.
 
-```{r}
+
+```r
 totalsteps2 <- tapply(filleddata$steps, filleddata$date, FUN = sum)
 hist(totalsteps2, col = "grey")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
+
+```r
 mean(totalsteps2)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median (totalsteps2)
+```
+
+```
+## [1] 10766.19
 ```
 
 values are different from original set as we have replaced the default zero
@@ -102,7 +158,8 @@ Weekday vs Weekends
 Create a new factor variable in the dataset with two levels - "weekday" and "weekend" 
 indicating whether a given date is a weekday or weekend day.
 
-```{r}
+
+```r
 weekdayorend <- function(date) {
   day <- weekdays(date)
   if (day %in% c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")) 
@@ -114,12 +171,14 @@ filleddata$day <- sapply(filleddata$date, FUN = weekdayorend)
 ```
 
 Now, let's make a panel plot containing plots of average number of steps taken on weekdays and weekends.
-```{r}
+
+```r
 avg2 <- aggregate(steps ~ interval + day, data = filleddata, mean)
 ggplot(avg2, aes(interval, steps)) + geom_line() + facet_grid(day ~ .) + 
   xlab("5-minute interval") + ylab("Number of steps")
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
 
 
 
